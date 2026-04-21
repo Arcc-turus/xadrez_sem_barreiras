@@ -1,0 +1,9 @@
+xadrez_env/
+# Cache do Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+# Arquivos de sistema
+Thumbs.db
+.DS_Store
