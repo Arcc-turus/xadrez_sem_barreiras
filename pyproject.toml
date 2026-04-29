@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xadrez-sem-barreiras"
+version = "0.1.0"
+description = "Rastreador de tabuleiro fisico de xadrez com camera, FEN e voz."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "opencv-python>=4.8",
+    "numpy>=1.24",
+    "python-chess>=1.999",
+]
+
+[project.scripts]
+xadrez-sem-barreiras = "xadrez_sem_barreiras.app:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
