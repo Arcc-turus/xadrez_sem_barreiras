@@ -96,16 +96,19 @@ class SegmentadorTabuleiro:
 
         # Segurança extra: se ainda sobrar uma mudança imediatamente acima de outra
         # na mesma coluna, a de cima costuma ser vazamento visual da peça de baixo.
-        for item in mudancas_encontradas:
-            for base_potencial in mudancas_encontradas:
-                if (
-                    base_potencial["linha"] == item["linha"] + 1
-                    and base_potencial["coluna"] == item["coluna"]
-                    and base_potencial["score"] >= item["score"] * 0.8
-                ):
-                    base_potencial["score"] += item["score"]
-                    item["is_artifact"] = True
-                    break
+        # Só aplica o filtro quando houver muitas mudanças (> 4), pois com 2-4 pode
+        # ser um lance legítimo como en passant ou roque.
+        if len(mudancas_encontradas) > 4:
+            for item in mudancas_encontradas:
+                for base_potencial in mudancas_encontradas:
+                    if (
+                        base_potencial["linha"] == item["linha"] + 1
+                        and base_potencial["coluna"] == item["coluna"]
+                        and base_potencial["score"] >= item["score"] * 0.8
+                    ):
+                        base_potencial["score"] += item["score"]
+                        item["is_artifact"] = True
+                        break
 
         candidatos_validos = [m for m in mudancas_encontradas if not m["is_artifact"]]
         candidatos_validos.sort(key=lambda x: x["score"], reverse=True)

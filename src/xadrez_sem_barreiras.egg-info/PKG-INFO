@@ -1,3 +1,13 @@
+Metadata-Version: 2.4
+Name: xadrez-sem-barreiras
+Version: 0.1.0
+Summary: Rastreador de tabuleiro fisico de xadrez com camera, FEN e voz.
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: opencv-python>=4.8
+Requires-Dist: numpy>=1.24
+Requires-Dist: python-chess>=1.999
+
 # Xadrez Sem Barreiras
 
 Projeto em Python para acompanhar um tabuleiro físico de xadrez por câmera, detectar movimentos, atualizar o estado da partida em FEN e falar o lance realizado.
@@ -11,7 +21,7 @@ Projeto em Python para acompanhar um tabuleiro físico de xadrez por câmera, de
 - Usa `python-chess` para validar os lances.
 - Suporta lances normais, en passant e roque.
 - Salva o FEN da posição atual.
-- Usa voz para anunciar [peça] [posição inicial] [posição final].
+- Usa voz para falar a peça e a casa de destino.
 
 ## Estrutura do repositório
 
@@ -77,45 +87,6 @@ python run.py --camera 0
 python run.py --camera 2
 ```
 
-## Velocidade da voz
-
-Use a flag `--voz` para ajustar a velocidade da fala. Aceita valores de 1.0 a 4.0 (com uma casa decimal):
-
-```bash
-python run.py --voz 2.0     # 2x mais rápido que o normal
-python run.py --voz 3.5     # 3.5x mais rápido
-python run.py --voz 1.0     # velocidade normal (padrão)
-```
-
-Se usar `--sem-voz`, a voz fica desligada independente da velocidade.
-
-### Alfabeto fonético NATO
-
-Use a flag `--voz-af` para que a voz anuncie as letras da coluna no alfabeto fonético NATO (Alpha, Bravo, Charlie...). Aceita um valor opcional de velocidade:
-
-```bash
-python run.py --voz-af          # fonético, velocidade normal
-python run.py --voz-af 2.0      # fonético, 2x mais rápido
-python run.py --voz-af 3.5      # fonético, 3.5x mais rápido
-```
-
-Combinações disponíveis:
-
-| Comando | Exemplo de voz |
-|---|---|
-| (padrão) | `Peão e 2 e 4.` |
-| `--voz-af` | `Peão Echo 2 Echo 4.` |
-| `--voz-af 2.0` | `Rei Echo 1 Golf 1. Roque pequeno.` |
-| `--voz 2.0` | `Peão e 2 e 4.` (mais rápido) |
-| `--sem-voz` | (silêncio) |
-
-### Janela de configuração de voz
-
-Dentro do programa, pressione `f` para abrir uma janela com:
-- **Toggle "Voz ativa"** — liga/desliga a voz
-- **Toggle "Alfabeto fonético NATO"** — usa Alpha, Bravo, Charlie...
-- **Slider de velocidade** — de 1.0x a 4.0x, mostra o valor atual ao arrastar
-
 ## Comandos dentro do programa
 
 | Tecla | Função |
@@ -123,7 +94,7 @@ Dentro do programa, pressione `f` para abrir uma janela com:
 | `c` | Calibrar manualmente as quinas do tabuleiro |
 | `v` | Tentar calibração automática |
 | `s` | Salvar o estado visual atual como referência |
-| `f` | Abrir janela de configuração de voz |
+| `f` | Ligar/desligar voz |
 | `z` | Desfazer o último lance |
 | `r` | Reiniciar a partida |
 | `q` | Sair |
@@ -138,17 +109,6 @@ Durante a execução, o programa salva arquivos dentro da pasta `data/`:
 Esses arquivos são ignorados pelo Git para não sujar o repositório.
 
 ## Voz no sistema
-
-A voz anuncia cada lance no formato: **[peça] [posição inicial] [posição final]**.
-
-Exemplos:
-- `Peão e2 e4.`
-- `Cavalo g1 f3.`
-- `Rei e1 g1. Roque pequeno.`
-- `Rei e1 c1. Roque grande.`
-- `Peão e7 e8. Promoção para Dama.`
-
-### Motores de voz
 
 - Windows: usa o sintetizador nativo via PowerShell.
 - Linux: tenta usar `spd-say` ou `espeak`.

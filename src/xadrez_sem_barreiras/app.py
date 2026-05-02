@@ -9,17 +9,48 @@ import cv2
 from .camera import BoardDetector
 from .segmentador import SegmentadorTabuleiro
 from .tradutor import TradutorXadrez
-from .xadrez import JogoXadrez
 from .voz import LeitorVoz
+from .xadrez import JogoXadrez
 
 
 DEFAULT_DATA_DIR = Path("data")
+
+_gui: object = None  # VozConfigGUI instance or None
+
+
+def _iniciar_gui_voz(voz: LeitorVoz, jogo: JogoXadrez) -> None:
+    """Cria a janela de configuracao de voz (chamado do loop principal)."""
+    global _gui
+    if _gui is not None:
+        return
+    try:
+        from .voz_gui import VozConfigGUI
+        _gui = VozConfigGUI(voz, jogo)
+        print("\n>>> Janela de voz aberta. Pressione 'f' novamente para reabrir se fechar.")
+    except Exception as e:
+        print(f"\n>>> ERRO ao abrir janela de voz: {e}")
+        import traceback
+        traceback.print_exc()
+
+
+def _atualizar_gui_voz() -> None:
+    """Chama update() da GUI e limpa se foi fechada."""
+    global _gui
+    if _gui is None:
+        return
+    try:
+        if not _gui.update():
+            _gui = None
+    except cv2.error:
+        _gui = None
 
 
 def executar_projeto(
     camera_index: int = 1,
     posicao_camera: str = "brancas_esquerda",
     voz_ativa: bool = True,
+    voz_velocidade: float = 1.0,
+    voz_fonetica: bool = False,
     tempo_confirmacao: float = 2.0,
     data_dir: Path | str = DEFAULT_DATA_DIR,
 ) -> None:
@@ -29,7 +60,7 @@ def executar_projeto(
     - c: calibrar manualmente as quinas do tabuleiro
     - v: tentar calibracao automatica
     - s: salvar o estado visual atual como referencia
-    - f: ligar/desligar voz
+    - f: abrir janela de configuracao de voz
     - z: desfazer ultimo lance
     - r: reiniciar partida
     - q: sair
@@ -43,8 +74,8 @@ def executar_projeto(
     olho = BoardDetector(camera_index=camera_index)
     segmentador = SegmentadorTabuleiro()
     tradutor = TradutorXadrez(posicao_camera=posicao_camera)
-    jogo = JogoXadrez()
-    voz = LeitorVoz(ativo=voz_ativa)
+    jogo = JogoXadrez(fonetica=voz_fonetica)
+    voz = LeitorVoz(ativo=voz_ativa, velocidade=voz_velocidade)
 
     casas_referencia = None
     candidato_mudancas = None
@@ -63,6 +94,7 @@ def executar_projeto(
                 break
 
             cv2.imshow("Captura de Video", frame)
+            _atualizar_gui_voz()
             tecla = cv2.waitKey(1) & 0xFF
 
             if tecla == ord("c"):
@@ -101,8 +133,7 @@ def executar_projeto(
                     print("Dica: remova as pecas e melhore a iluminacao.")
 
             elif tecla == ord("f"):
-                ativo = voz.alternar()
-                print(f"Voz {'ativada' if ativo else 'desativada'}.")
+                _iniciar_gui_voz(voz, jogo)
 
             elif tecla == ord("s"):
                 if olho.pontos_origem is not None:
@@ -173,6 +204,9 @@ def criar_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Rastreador de xadrez fisico com camera, FEN e voz.")
     parser.add_argument("--camera", type=int, default=1, help="Indice da camera. Ex.: 0, 1 ou 2.")
     parser.add_argument("--sem-voz", action="store_true", help="Inicia o programa com voz desativada.")
+    parser.add_argument("--voz", type=float, default=1.0, help="Velocidade da voz de 1.0 a 4.0 (ex.: 1.5, 2.0, 3.5).")
+    parser.add_argument("--voz-af", type=float, nargs="?", const=1.0, default=None,
+                        help="Alfabeto fonetico NATO com velocidade opcional. Ex.: --voz-af 2.0")
     parser.add_argument("--tempo-confirmacao", type=float, default=2.0, help="Tempo em segundos para confirmar movimento estavel.")
     parser.add_argument("--data-dir", type=Path, default=DEFAULT_DATA_DIR, help="Pasta onde salvar FEN e imagem de referencia.")
     parser.add_argument("--posicao-camera", default="brancas_esquerda", help="Orientacao usada pelo tradutor de casas.")
@@ -181,10 +215,26 @@ def criar_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     args = criar_parser().parse_args()
+
+    if args.sem_voz:
+        voz_ativa = False
+        voz_velocidade = 1.0
+        voz_fonetica = False
+    elif args.voz_af is not None:
+        voz_ativa = True
+        voz_velocidade = max(1.0, min(4.0, args.voz_af))
+        voz_fonetica = True
+    else:
+        voz_ativa = True
+        voz_velocidade = max(1.0, min(4.0, args.voz))
+        voz_fonetica = False
+
     executar_projeto(
         camera_index=args.camera,
         posicao_camera=args.posicao_camera,
-        voz_ativa=not args.sem_voz,
+        voz_ativa=voz_ativa,
+        voz_velocidade=voz_velocidade,
+        voz_fonetica=voz_fonetica,
         tempo_confirmacao=args.tempo_confirmacao,
         data_dir=args.data_dir,
     )
