@@ -46,22 +46,18 @@ class LeitorVoz:
                     return
 
                 if "darwin" in sistema and shutil.which("say"):
-                    # macOS say: -r em palavras por minuto, default 200
                     wpm = int(175 * self.velocidade)
                     subprocess.run(["say", "-r", str(wpm), texto],
                                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                     return
 
                 if shutil.which("spd-say"):
-                    # spd-say: -r em percentual 0-100, default 50
-                    # mapeia 1.0->50, 2.0->67, 3.0->83, 4.0->100
                     rate = int(50 + (self.velocidade - 1.0) * (50.0 / 3.0))
                     subprocess.run(["spd-say", "-l", "pt-BR", "-r", str(rate), texto],
                                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                     return
 
                 if shutil.which("espeak") or shutil.which("espeak-ng"):
-                    # espeak: -s em palavras por minuto, default 175, max ~500
                     wpm = min(int(150 * self.velocidade), 500)
                     cmd = "espeak-ng" if shutil.which("espeak-ng") else "espeak"
                     subprocess.run([cmd, "-v", "pt-br", "-s", str(wpm), texto],
@@ -69,14 +65,11 @@ class LeitorVoz:
                     return
 
                 print("[voz] Nenhum sintetizador de voz encontrado neste sistema.")
-                print("[voz] Linux: sudo apt install speech-dispatcher espeak")
             except Exception as erro:
                 print(f"[voz] Não foi possível falar: {erro}")
 
     def _falar_windows(self, texto):
         texto_seguro = texto.replace("'", "''")
-        # Windows Speech: Rate de -10 a +10
-        # mapeia 1.0->0, 2.0->3, 3.0->7, 4.0->10
         rate = int((self.velocidade - 1.0) * (10.0 / 3.0))
         comando = (
             "Add-Type -AssemblyName System.Speech; "

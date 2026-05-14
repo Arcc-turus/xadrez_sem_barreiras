@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xadrez Sem Barreiras</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Xadrez Sem Barreiras</h1>
+
+        <!-- Fase 1: Selecionar camera -->
+        <div class="phase" id="phaseSelect">
+            <label for="cameraSelect">Selecionar camera:</label>
+            <select id="cameraSelect">
+                <option value="">Carregando...</option>
+            </select>
+            <button id="btnSelectCamera" disabled>Selecionar</button>
+        </div>
+
+        <!-- Fase 2: Feed + acoes -->
+        <div class="phase" id="phaseFeed" style="display:none;">
+            <div class="video-area" id="videoArea">
+                <div class="video-wrapper" id="videoWrapper">
+                    <img id="videoFeed" src="" alt="" />
+                    <div class="overlay" id="overlay"></div>
+                    <div class="overlay-content" id="overlayContent" style="display:none;">
+                        <p id="overlayText"></p>
+                        <p id="overlayHint"></p>
+                    </div>
+                    <div id="crosshairCursor" class="crosshair-cursor" style="display:none;">
+                        <div class="center-dot"></div>
+                    </div>
+                    <div id="markersContainer"></div>
+                </div>
+
+                <!-- Mascara de diferenca -->
+                <div class="mask-wrapper" id="maskWrapper" style="display:none;">
+                    <h3>Mascara de Diferenca</h3>
+                    <img id="maskFeed" src="" alt="" />
+                </div>
+            </div>
+
+            <!-- Controles pre-calibracao -->
+            <div class="controls" id="controlsPreCal">
+                <button id="btnCalibrate" class="btn-primary">Calibrar</button>
+            </div>
+
+            <!-- Controles durante calibracao -->
+            <div class="controls" id="controlsCalibrating" style="display:none;">
+                <span id="calibrationStepInfo" class="calibration-info"></span>
+                <button id="btnUndoPoint" class="btn-secondary">Desfazer</button>
+                <button id="btnResetCalibration" class="btn-danger">Reiniciar</button>
+            </div>
+
+            <!-- Controles pos-calibracao -->
+            <div class="controls" id="controlsPostCal" style="display:none;">
+                <button id="btnSaveRef" class="btn-primary">Salvar referencia</button>
+                <button id="btnCalibrateAgain" class="btn-secondary">Recalibrar</button>
+            </div>
+
+            <!-- Controles durante rastreio -->
+            <div class="controls" id="controlsTracking" style="display:none;">
+                <button id="btnStopTrack" class="btn-primary">Parar rastreio</button>
+                <button id="btnVoice" class="btn-secondary">Voz: ON</button>
+                <button id="btnVoiceConfig" class="btn-secondary">Config voz</button>
+                <button id="btnToggleMask" class="btn-secondary">Mascara</button>
+                <button id="btnUndoMove" class="btn-secondary">Desfazer lance</button>
+                <button id="btnResetGame" class="btn-danger">Reiniciar partida</button>
+            </div>
+
+            <!-- Historico de jogadas -->
+            <div class="history" id="history" style="display:none;">
+                <h3>Historico de Jogadas</h3>
+                <div class="history-list" id="historyList">
+                    <p class="history-empty">Nenhuma jogada ainda.</p>
+                </div>
+            </div>
+
+            <!-- Alertas -->
+            <div class="alerts" id="alerts"></div>
+        </div>
+
+        <!-- Modal calibracao -->
+        <div class="modal" id="calibrationModal" style="display:none;">
+            <div class="modal-content">
+                <h2>Tipo de Calibracao</h2>
+                <div class="modal-buttons">
+                    <button id="btnManual" class="btn-option">Manual</button>
+                    <button id="btnAuto" class="btn-option">Automatica</button>
+                </div>
+                <button id="btnCancelModal" class="btn-cancel">Cancelar</button>
+            </div>
+        </div>
+
+        <!-- Modal configuracao de voz -->
+        <div class="modal" id="voiceModal" style="display:none;">
+            <div class="modal-content voice-config">
+                <h2>Configuracao de Voz</h2>
+
+                <div class="voice-options">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="cbVoiceActive" checked>
+                        <span>Voz</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="cbPhonetic">
+                        <span>Fonetico (NATO)</span>
+                    </label>
+                </div>
+
+                <div class="voice-slider-section">
+                    <label for="voiceSlider">Velocidade: <span id="voiceSpeedValue">1.0</span>x</label>
+                    <input type="range" id="voiceSlider" min="1.0" max="4.0" step="0.1" value="1.0">
+                </div>
+
+                <div class="voice-buttons">
+                    <button id="btnTestVoice" class="btn-option">Testar</button>
+                    <button id="btnCloseVoice" class="btn-cancel">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

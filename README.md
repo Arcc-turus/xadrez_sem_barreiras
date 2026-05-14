@@ -57,6 +57,13 @@ pip install -r requirements.txt
 
 ## Como executar
 
+### Interface web
+
+```bash
+python web/app.py
+# Acesse http://localhost:5000
+```
+
 Forma recomendada:
 
 ```bash

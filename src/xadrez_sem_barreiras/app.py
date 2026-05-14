@@ -210,11 +210,17 @@ def criar_parser() -> argparse.ArgumentParser:
     parser.add_argument("--tempo-confirmacao", type=float, default=2.0, help="Tempo em segundos para confirmar movimento estavel.")
     parser.add_argument("--data-dir", type=Path, default=DEFAULT_DATA_DIR, help="Pasta onde salvar FEN e imagem de referencia.")
     parser.add_argument("--posicao-camera", default="brancas_esquerda", help="Orientacao usada pelo tradutor de casas.")
+    parser.add_argument("--web", action="store_true", help="Inicia o servidor web em localhost:5000.")
     return parser
 
 
 def main() -> None:
     args = criar_parser().parse_args()
+
+    if args.web:
+        from web.app import main as web_main
+        web_main()
+        return
 
     if args.sem_voz:
         voz_ativa = False
